@@ -17,6 +17,7 @@ import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetH264Data;
+import com.pedro.encoder.video.MimeType;
 import com.pedro.encoder.video.VideoEncoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -70,7 +71,7 @@ public abstract class BuilderSurfaceModeBase
     videoEncoder.setImageFormat(imageFormat);
     boolean result =
         videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation,
-            FormatVideoEncoder.SURFACE);
+            FormatVideoEncoder.SURFACE, MimeType.H264);
     cameraManager = new Camera2ApiManager(surfaceView, videoEncoder.getInputSurface(), context);
     return result;
   }
@@ -86,7 +87,7 @@ public abstract class BuilderSurfaceModeBase
 
   public boolean prepareVideo() {
     boolean result = videoEncoder.prepareVideoEncoder(640, 480, 30, 1200 * 1024, 90, true,
-        FormatVideoEncoder.SURFACE);
+        FormatVideoEncoder.SURFACE, MimeType.H264);
     cameraManager = new Camera2ApiManager(surfaceView, videoEncoder.getInputSurface(), context);
     return result;
   }

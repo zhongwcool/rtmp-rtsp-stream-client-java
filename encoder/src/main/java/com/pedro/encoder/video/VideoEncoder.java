@@ -21,6 +21,8 @@ import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.utils.YUVUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -48,7 +50,7 @@ public class VideoEncoder implements GetCameraData {
   private int imageFormat = ImageFormat.NV21;
 
   //default parameters for encoder
-  private String mime = "video/avc";
+  private String mime = MimeType.H264.getMime();
   private int width = 640;
   private int height = 480;
   private int fps = 30;
@@ -67,7 +69,7 @@ public class VideoEncoder implements GetCameraData {
    * Prepare encoder with custom parameters
    */
   public boolean prepareVideoEncoder(int width, int height, int fps, int bitRate, int rotation,
-      boolean hardwareRotation, FormatVideoEncoder formatVideoEncoder) {
+      boolean hardwareRotation, FormatVideoEncoder formatVideoEncoder, MimeType mimeType) {
     this.width = width;
     this.height = height;
     this.fps = fps;
@@ -75,6 +77,7 @@ public class VideoEncoder implements GetCameraData {
     this.rotation = rotation;
     this.hardwareRotation = hardwareRotation;
     this.formatVideoEncoder = formatVideoEncoder;
+    this.mime = mimeType.getMime();
     MediaCodecInfo encoder;
     if (Build.VERSION.SDK_INT >= 21) {
       encoder = chooseVideoEncoderAPI21(mime);
@@ -147,7 +150,8 @@ public class VideoEncoder implements GetCameraData {
    * Prepare encoder with default parameters
    */
   public boolean prepareVideoEncoder() {
-    return prepareVideoEncoder(width, height, fps, bitRate, rotation, false, formatVideoEncoder);
+    return prepareVideoEncoder(width, height, fps, bitRate, rotation, false, formatVideoEncoder,
+        MimeType.H264);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -306,8 +310,16 @@ public class VideoEncoder implements GetCameraData {
             if (outBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
               MediaFormat mediaFormat = videoEncoder.getOutputFormat();
               getH264Data.onVideoFormat(mediaFormat);
-              getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
-                  mediaFormat.getByteBuffer("csd-1"));
+              if (mime.equals(MimeType.H264.getMime())) {
+                getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
+                    mediaFormat.getByteBuffer("csd-1"));
+                //H265 case
+              } else {
+                //list with vps, pps and sps
+                List<ByteBuffer> byteBufferList =
+                    extractVpsSpsPpsFromH265(mediaFormat.getByteBuffer("csd-0"));
+                getH264Data.onSPSandPPS(byteBufferList.get(1), byteBufferList.get(2));
+              }
               spsPpsSetted = true;
             } else if (outBufferIndex >= 0) {
               if ((videoInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
@@ -347,8 +359,16 @@ public class VideoEncoder implements GetCameraData {
             if (outBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
               MediaFormat mediaFormat = videoEncoder.getOutputFormat();
               getH264Data.onVideoFormat(mediaFormat);
-              getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
-                  mediaFormat.getByteBuffer("csd-1"));
+              if (mime.equals(MimeType.H264.getMime())) {
+                getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
+                    mediaFormat.getByteBuffer("csd-1"));
+                //H265 case
+              } else {
+                //list with vps, pps and sps
+                List<ByteBuffer> byteBufferList =
+                    extractVpsSpsPpsFromH265(mediaFormat.getByteBuffer("csd-0"));
+                getH264Data.onSPSandPPS(byteBufferList.get(1), byteBufferList.get(2));
+              }
               spsPpsSetted = true;
             } else if (outBufferIndex >= 0) {
               if ((videoInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
@@ -390,8 +410,16 @@ public class VideoEncoder implements GetCameraData {
       if (outBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
         MediaFormat mediaFormat = videoEncoder.getOutputFormat();
         getH264Data.onVideoFormat(mediaFormat);
-        getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
-            mediaFormat.getByteBuffer("csd-1"));
+        if (mime.equals(MimeType.H264.getMime())) {
+          getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
+              mediaFormat.getByteBuffer("csd-1"));
+          //H265 case
+        } else {
+          //list with vps, pps and sps
+          List<ByteBuffer> byteBufferList =
+              extractVpsSpsPpsFromH265(mediaFormat.getByteBuffer("csd-0"));
+          getH264Data.onSPSandPPS(byteBufferList.get(1), byteBufferList.get(2));
+        }
         spsPpsSetted = true;
       } else if (outBufferIndex >= 0) {
         if ((videoInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
@@ -433,8 +461,16 @@ public class VideoEncoder implements GetCameraData {
       if (outBufferIndex == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
         MediaFormat mediaFormat = videoEncoder.getOutputFormat();
         getH264Data.onVideoFormat(mediaFormat);
-        getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
-            mediaFormat.getByteBuffer("csd-1"));
+        if (mime.equals(MimeType.H264.getMime())) {
+          getH264Data.onSPSandPPS(mediaFormat.getByteBuffer("csd-0"),
+              mediaFormat.getByteBuffer("csd-1"));
+          //H265 case
+        } else {
+          //list with vps, pps and sps
+          List<ByteBuffer> byteBufferList =
+              extractVpsSpsPpsFromH265(mediaFormat.getByteBuffer("csd-0"));
+          getH264Data.onSPSandPPS(byteBufferList.get(1), byteBufferList.get(2));
+        }
         spsPpsSetted = true;
       } else if (outBufferIndex >= 0) {
         if ((videoInfo.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0) {
@@ -583,5 +619,53 @@ public class VideoEncoder implements GetCameraData {
       return new Pair<>(ByteBuffer.wrap(mSPS), ByteBuffer.wrap(mPPS));
     }
     return null;
+  }
+
+  /**
+   * You need find 0 0 0 1 byte sequence that is the initiation of vps, sps and pps
+   * buffers.
+   *
+   * @param csd0byteBuffer get in mediacodec case MediaCodec.INFO_OUTPUT_FORMAT_CHANGED
+   * @return list with vps, sps and pps
+   */
+  private List<ByteBuffer> extractVpsSpsPpsFromH265(ByteBuffer csd0byteBuffer) {
+    List<ByteBuffer> byteBufferList = new ArrayList<>();
+    int vpsPosition = -1;
+    int spsPosition = -1;
+    int ppsPosition = -1;
+    int contBufferInitiation = 0;
+    byte[] csdArray = csd0byteBuffer.array();
+    for (int i = 0; i < csdArray.length; i++) {
+      if (contBufferInitiation == 3 && csdArray[i] == 1) {
+        if (vpsPosition == -1) {
+          vpsPosition = i - 3;
+        } else if (spsPosition == -1) {
+          spsPosition = i - 3;
+        } else {
+          ppsPosition = i - 3;
+        }
+      }
+      if (csdArray[i] == 0) {
+        contBufferInitiation++;
+      } else {
+        contBufferInitiation = 0;
+      }
+    }
+    byte[] vps = new byte[spsPosition];
+    byte[] sps = new byte[ppsPosition - spsPosition];
+    byte[] pps = new byte[csdArray.length - ppsPosition];
+    for (int i = 0; i < csdArray.length; i++) {
+      if (i < spsPosition) {
+        vps[i] = csdArray[i];
+      } else if (i < ppsPosition) {
+        sps[i - spsPosition] = csdArray[i];
+      } else {
+        pps[i - ppsPosition] = csdArray[i];
+      }
+    }
+    byteBufferList.add(ByteBuffer.wrap(vps));
+    byteBufferList.add(ByteBuffer.wrap(sps));
+    byteBufferList.add(ByteBuffer.wrap(pps));
+    return byteBufferList;
   }
 }

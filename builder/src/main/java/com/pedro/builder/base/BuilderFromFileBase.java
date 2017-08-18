@@ -10,6 +10,7 @@ import com.pedro.encoder.input.decoder.VideoDecoderInterface;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetH264Data;
+import com.pedro.encoder.video.MimeType;
 import com.pedro.encoder.video.VideoEncoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -57,7 +58,7 @@ public abstract class BuilderFromFileBase implements GetCameraData, GetH264Data 
     //if (!videoDecoder.initExtractor(filePath)) return false;
     boolean result =
         videoEncoder.prepareVideoEncoder(mediaPlayer.getVideoWidth(), mediaPlayer.getVideoHeight(),
-            30, bitRate, 0, true, FormatVideoEncoder.SURFACE);
+            30, bitRate, 0, true, FormatVideoEncoder.SURFACE, MimeType.H264);
     mediaPlayer.setSurface(videoEncoder.getInputSurface());
     //videoDecoder.prepareVideo(videoEncoder.getInputSurface());
     return result;

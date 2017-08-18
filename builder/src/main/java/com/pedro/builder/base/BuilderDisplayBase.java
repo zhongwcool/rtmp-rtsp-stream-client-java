@@ -20,6 +20,7 @@ import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetH264Data;
+import com.pedro.encoder.video.MimeType;
 import com.pedro.encoder.video.VideoEncoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -71,7 +72,7 @@ public abstract class BuilderDisplayBase
     videoEncoder.setImageFormat(imageFormat);
     boolean result =
         videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation,
-            FormatVideoEncoder.SURFACE);
+            FormatVideoEncoder.SURFACE, MimeType.H264);
     return result;
   }
 
@@ -86,7 +87,7 @@ public abstract class BuilderDisplayBase
 
   public boolean prepareVideo() {
     return videoEncoder.prepareVideoEncoder(640, 480, 30, 1200 * 1024, 0, true,
-        FormatVideoEncoder.SURFACE);
+        FormatVideoEncoder.SURFACE, MimeType.H264);
   }
 
   public abstract boolean prepareAudio();

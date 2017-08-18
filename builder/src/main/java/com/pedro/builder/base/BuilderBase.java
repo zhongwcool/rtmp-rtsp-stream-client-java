@@ -18,6 +18,7 @@ import com.pedro.encoder.input.video.EffectManager;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetH264Data;
+import com.pedro.encoder.video.MimeType;
 import com.pedro.encoder.video.VideoEncoder;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -61,7 +62,7 @@ public abstract class BuilderBase
     cameraManager.prepareCamera(width, height, fps, imageFormat);
     videoEncoder.setImageFormat(imageFormat);
     return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation,
-        FormatVideoEncoder.YUV420Dynamical);
+        FormatVideoEncoder.YUV420Dynamical, MimeType.H264);
   }
 
   protected abstract void prepareAudioRtp(boolean isStereo, int sampleRate);
