@@ -51,14 +51,14 @@ public class ManagerRender {
     screenRender.initGl(context);
   }
 
-  public void drawOffScreen() {
-    cameraRender.draw();
+  public void drawOffScreen(boolean isFrontCamera) {
+    cameraRender.draw(isFrontCamera);
     streamObjectRender.draw();
     baseFilterRender.draw();
   }
 
-  public void drawScreen(int width, int height) {
-    screenRender.draw(width, height);
+  public void drawScreen(int width, int height, boolean isPreview) {
+    screenRender.draw(width, height, isPreview ? 0 : 1);
   }
 
   public void release() {
@@ -135,9 +135,5 @@ public class ManagerRender {
 
   public void setStreamSize(int encoderWidth, int encoderHeight) {
     streamObjectRender.setStreamSize(encoderWidth, encoderHeight);
-  }
-
-  public void faceChanged(boolean isFrontCamera) {
-    cameraRender.faceChanged(isFrontCamera);
   }
 }

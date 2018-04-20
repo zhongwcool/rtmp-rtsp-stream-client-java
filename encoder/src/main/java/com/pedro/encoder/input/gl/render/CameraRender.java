@@ -49,7 +49,6 @@ public class CameraRender extends BaseRenderOffScreen {
 
   private SurfaceTexture surfaceTexture;
   private Surface surface;
-  private boolean isFrontCamera = false;
 
   public CameraRender() {
     Matrix.setIdentityM(MVPMatrix, 0);
@@ -62,7 +61,7 @@ public class CameraRender extends BaseRenderOffScreen {
     this.height = height;
     GlUtil.checkGlError("initGl start");
     String vertexShader = GlUtil.getStringFromRaw(context, R.raw.simple_vertex);
-    String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.camera_fragment);
+    String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.simple_camera_fragment);
 
     program = GlUtil.createProgram(vertexShader, fragmentShader);
     aPositionHandle = GLES20.glGetAttribLocation(program, "aPosition");
@@ -81,37 +80,44 @@ public class CameraRender extends BaseRenderOffScreen {
   }
 
   @Override
-  public void draw() {
+  public void draw(boolean isFrontCamera) {
     GlUtil.checkGlError("drawCamera start");
-    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId[0]);
+    for(int i = 0; i < 2; i++) {
+      GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId[i]);
 
-    surfaceTexture.getTransformMatrix(STMatrix);
-    GLES20.glViewport(0, 0, width, height);
-    GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
-    GLES20.glUseProgram(program);
+      surfaceTexture.getTransformMatrix(STMatrix);
+      GLES20.glViewport(0, 0, width, height);
+      GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+      GLES20.glClear(GLES20.GL_DEPTH_BUFFER_BIT | GLES20.GL_COLOR_BUFFER_BIT);
+      GLES20.glUseProgram(program);
 
-    squareVertex.position(SQUARE_VERTEX_DATA_POS_OFFSET);
-    GLES20.glVertexAttribPointer(aPositionHandle, 3, GLES20.GL_FLOAT, false,
-        SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
-    GLES20.glEnableVertexAttribArray(aPositionHandle);
+      squareVertex.position(SQUARE_VERTEX_DATA_POS_OFFSET);
+      GLES20.glVertexAttribPointer(aPositionHandle, 3, GLES20.GL_FLOAT, false,
+          SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
+      GLES20.glEnableVertexAttribArray(aPositionHandle);
 
-    squareVertex.position(SQUARE_VERTEX_DATA_UV_OFFSET);
-    GLES20.glVertexAttribPointer(aTextureCameraHandle, 2, GLES20.GL_FLOAT, false,
-        SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
-    GLES20.glEnableVertexAttribArray(aTextureCameraHandle);
+      squareVertex.position(SQUARE_VERTEX_DATA_UV_OFFSET);
+      GLES20.glVertexAttribPointer(aTextureCameraHandle, 2, GLES20.GL_FLOAT, false,
+          SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
+      GLES20.glEnableVertexAttribArray(aTextureCameraHandle);
 
-    GLES20.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, MVPMatrix, 0);
-    GLES20.glUniformMatrix4fv(uSTMatrixHandle, 1, false, STMatrix, 0);
-    GLES20.glUniform1f(uIsFrontCameraHandle, isFrontCamera ? 1f : 0f);
-    //camera
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
-    GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureID[0]);
-    //draw
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+      GLES20.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, MVPMatrix, 0);
+      GLES20.glUniformMatrix4fv(uSTMatrixHandle, 1, false, STMatrix, 0);
+      GLES20.glUniform1f(uIsFrontCameraHandle, (isFrontCamera && i == 1) ? 1f : 0f);
+      //camera
+      GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+      GLES20.glBindTexture(GLES11Ext.GL_TEXTURE_EXTERNAL_OES, textureID[0]);
+      //draw
+      GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+      GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    }
     GlUtil.checkGlError("drawCamera end");
+  }
+
+  @Override
+  public void draw() {
+
   }
 
   @Override
@@ -141,9 +147,5 @@ public class CameraRender extends BaseRenderOffScreen {
     } else {
       squareVertex.put(squareVertexDataCamera).position(0);
     }
-  }
-
-  public void faceChanged(boolean isFrontCamera) {
-    this.isFrontCamera = isFrontCamera;
   }
 }

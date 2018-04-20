@@ -177,9 +177,14 @@ public class OpenGlView extends OpenGlViewBase {
               if (surfaceManagerEncoder == null) loadStreamObject = false;
             }
             managerRender.updateFrame();
-            managerRender.drawOffScreen();
-            if (rotate) managerRender.drawScreen(rotatedPreviewWidth, rotatedPreviewHeight);
-            else managerRender.drawScreen(previewWidth, previewHeight);
+            managerRender.drawOffScreen(isFrontCamera);
+            if (rotate) {
+              managerRender.drawScreen(rotatedPreviewWidth, rotatedPreviewHeight,
+                  frontPreviewMirror);
+            } else {
+              managerRender.drawScreen(previewWidth, previewHeight,
+                  frontPreviewMirror);
+            }
             surfaceManager.swapBuffer();
             //stream object loaded but you need reset surfaceManagerEncoder
             synchronized (sync) {
@@ -192,8 +197,12 @@ public class OpenGlView extends OpenGlViewBase {
                   continue;
                 }
                 surfaceManagerEncoder.makeCurrent();
-                if (rotate) managerRender.drawScreen(rotatedEncoderWidth, rotatedEncoderHeight);
-                else managerRender.drawScreen(encoderWidth, encoderHeight);
+                if (rotate) {
+                  managerRender.drawScreen(rotatedEncoderWidth, rotatedEncoderHeight,
+                      false);
+                } else {
+                  managerRender.drawScreen(encoderWidth, encoderHeight, false);
+                }
                 long ts = managerRender.getSurfaceTexture().getTimestamp();
                 surfaceManagerEncoder.setPresentationTime(ts);
                 surfaceManagerEncoder.swapBuffer();
@@ -219,9 +228,6 @@ public class OpenGlView extends OpenGlViewBase {
           } else if (loadAA) {
             managerRender.enableAA(AAEnabled);
             loadAA = false;
-          } else if (onChangeFace) {
-            managerRender.faceChanged(isFrontCamera);
-            onChangeFace = false;
           }
         }
       }

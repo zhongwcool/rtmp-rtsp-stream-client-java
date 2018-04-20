@@ -96,7 +96,7 @@ public class SimpleCameraRender {
     surfaceTexture.updateTexImage();
   }
 
-  public void drawFrame(int width, int height) {
+  public void drawFrame(int width, int height, boolean isFrontCamera) {
     GlUtil.checkGlError("drawFrame start");
     surfaceTexture.getTransformMatrix(STMatrix);
 
@@ -133,7 +133,7 @@ public class SimpleCameraRender {
   public void initGl(Context context) {
     GlUtil.checkGlError("initGl start");
     String vertexShader = GlUtil.getStringFromRaw(context, R.raw.simple_vertex);
-    String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.camera_fragment);
+    String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.simple_camera_fragment);
 
     program = GlUtil.createProgram(vertexShader, fragmentShader);
     aPositionHandle = GLES20.glGetAttribLocation(program, "aPosition");
@@ -154,9 +154,5 @@ public class SimpleCameraRender {
   public void release() {
     surfaceTexture = null;
     surface = null;
-  }
-
-  public void faceChanged(boolean isFrontCamera) {
-    this.isFrontCamera = isFrontCamera;
   }
 }

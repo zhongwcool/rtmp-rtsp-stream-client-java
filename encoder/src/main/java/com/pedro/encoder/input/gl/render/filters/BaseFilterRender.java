@@ -18,10 +18,10 @@ public abstract class BaseFilterRender extends BaseRenderOffScreen {
   private int height;
 
   //static to share with all filters
-  protected static int previousTexId;
-  protected static final int[] fboId = new int[] { 0 };
-  private static final int[] rboId = new int[] { 0 };
-  private static final int[] texId = new int[] { 0 };
+  protected static int[] previousTexId;
+  protected static final int[] fboId = new int[] { 0, 0 };
+  private static final int[] rboId = new int[] { 0, 0 };
+  private static final int[] texId = new int[] { 0, 0 };
 
   public void initGl(int width, int height, Context context) {
     this.width = width;
@@ -37,25 +37,33 @@ public abstract class BaseFilterRender extends BaseRenderOffScreen {
 
   protected abstract void initGlFilter(Context context);
 
+  @Override
+  public void draw(boolean isFrontCamera) {
+
+  }
+
+  @Override
   public void draw() {
     GlUtil.checkGlError("drawFilter start");
-    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId[0]);
-    GLES20.glViewport(0, 0, width, height);
-    drawFilter();
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
-    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    for (int i = 0; i < 2; i++) {
+      GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId[i]);
+      GLES20.glViewport(0, 0, width, height);
+      drawFilter(previousTexId[i]);
+      GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+      GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    }
     GlUtil.checkGlError("drawFilter end");
   }
 
-  protected abstract void drawFilter();
+  protected abstract void drawFilter(int previousTexId);
 
-  public void setTexId(int texId) {
+  public void setTexId(int[] texId) {
     this.previousTexId = texId;
   }
 
   @Override
-  public int getTexId() {
-    return texId[0];
+  public int[] getTexId() {
+    return texId;
   }
 
   protected int getWidth() {

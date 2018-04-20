@@ -74,7 +74,7 @@ public class DuotoneFilterRender extends BaseFilterRender {
   }
 
   @Override
-  protected void drawFilter() {
+  protected void drawFilter(int previousTexId) {
     GLES20.glUseProgram(program);
 
     squareVertex.position(SQUARE_VERTEX_DATA_POS_OFFSET);

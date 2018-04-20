@@ -82,6 +82,7 @@ public class OpenGlRtmpActivity extends AppCompatActivity
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     setContentView(R.layout.activity_open_gl);
     OpenGlView openGlView = findViewById(R.id.surfaceView);
+    //openGlView.isFrontPreviewMirror(true);  //If you want mirror front camera preview
     button = findViewById(R.id.b_start_stop);
     button.setOnClickListener(this);
     bRecord = findViewById(R.id.b_record);

@@ -33,7 +33,7 @@ public class ScreenRender {
   private float[] STMatrix = new float[16];
   private boolean AAEnabled = false;  //FXAA enable/disable
 
-  private int texId;
+  private int[] texId;
 
   private int program = -1;
   private int uMVPMatrixHandle = -1;
@@ -57,9 +57,7 @@ public class ScreenRender {
   public void initGl(Context context) {
     GlUtil.checkGlError("initGl start");
     String vertexShader = GlUtil.getStringFromRaw(context, R.raw.simple_vertex);
-    //String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.simple_fragment);
     String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.fxaa);
-    //String fragmentShader = GlUtil.getStringFromRaw(context, R.raw.fxaa_pc);
 
     program = GlUtil.createProgram(vertexShader, fragmentShader);
     aPositionHandle = GLES20.glGetAttribLocation(program, "aPosition");
@@ -72,7 +70,7 @@ public class ScreenRender {
     GlUtil.checkGlError("initGl end");
   }
 
-  public void draw(int width, int height) {
+  public void draw(int width, int height, int numTextureUsed) {
     GlUtil.checkGlError("drawScreen start");
 
     GLES20.glViewport(0, 0, width, height);
@@ -92,9 +90,10 @@ public class ScreenRender {
     GLES20.glUniformMatrix4fv(uSTMatrixHandle, 1, false, STMatrix, 0);
     GLES20.glUniform2f(uResolutionHandle, width, height);
     GLES20.glUniform1f(uAAEnabledHandle, AAEnabled ? 1f : 0f);
+
     GLES20.glUniform1i(uSamplerHandle, 5);
     GLES20.glActiveTexture(GLES20.GL_TEXTURE5);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
+    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId[numTextureUsed]);
     //draw
     GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
@@ -105,7 +104,7 @@ public class ScreenRender {
 
   }
 
-  public void setTexId(int texId) {
+  public void setTexId(int[] texId) {
     this.texId = texId;
   }
 

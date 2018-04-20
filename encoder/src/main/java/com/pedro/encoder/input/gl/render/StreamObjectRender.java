@@ -40,7 +40,7 @@ public class StreamObjectRender extends BaseRenderOffScreen {
   private float[] MVPMatrix = new float[16];
   private float[] STMatrix = new float[16];
 
-  private int texId;
+  private int[] texId;
 
   private int program = -1;
   private int aPositionHandle = -1;
@@ -102,54 +102,61 @@ public class StreamObjectRender extends BaseRenderOffScreen {
   public void draw() {
     GlUtil.checkGlError("drawStreamObject start");
 
-    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId[0]);
-    GLES20.glViewport(0, 0, width, height);
-    GLES20.glUseProgram(program);
+    for (int i = 0; i < 2; i++) {
+      GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, fboId[i]);
+      GLES20.glViewport(0, 0, width, height);
+      GLES20.glUseProgram(program);
 
-    squareVertex.position(SQUARE_VERTEX_DATA_POS_OFFSET);
-    GLES20.glVertexAttribPointer(aPositionHandle, 3, GLES20.GL_FLOAT, false,
-        SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
-    GLES20.glEnableVertexAttribArray(aPositionHandle);
+      squareVertex.position(SQUARE_VERTEX_DATA_POS_OFFSET);
+      GLES20.glVertexAttribPointer(aPositionHandle, 3, GLES20.GL_FLOAT, false,
+          SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
+      GLES20.glEnableVertexAttribArray(aPositionHandle);
 
-    squareVertex.position(SQUARE_VERTEX_DATA_UV_OFFSET);
-    GLES20.glVertexAttribPointer(aTextureCameraHandle, 2, GLES20.GL_FLOAT, false,
-        SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
-    GLES20.glEnableVertexAttribArray(aTextureCameraHandle);
+      squareVertex.position(SQUARE_VERTEX_DATA_UV_OFFSET);
+      GLES20.glVertexAttribPointer(aTextureCameraHandle, 2, GLES20.GL_FLOAT, false,
+          SQUARE_VERTEX_DATA_STRIDE_BYTES, squareVertex);
+      GLES20.glEnableVertexAttribArray(aTextureCameraHandle);
 
-    squareVertexWatermark.position(SQUARE_VERTEX_DATA_POS_OFFSET);
-    GLES20.glVertexAttribPointer(aTextureWatermarkHandle, 2, GLES20.GL_FLOAT, false,
-        2 * FLOAT_SIZE_BYTES, squareVertexWatermark);
-    GLES20.glEnableVertexAttribArray(aTextureWatermarkHandle);
+      squareVertexWatermark.position(SQUARE_VERTEX_DATA_POS_OFFSET);
+      GLES20.glVertexAttribPointer(aTextureWatermarkHandle, 2, GLES20.GL_FLOAT, false,
+          2 * FLOAT_SIZE_BYTES, squareVertexWatermark);
+      GLES20.glEnableVertexAttribArray(aTextureWatermarkHandle);
 
-    GLES20.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, MVPMatrix, 0);
-    GLES20.glUniformMatrix4fv(uSTMatrixHandle, 1, false, STMatrix, 0);
-    //camera
-    GLES20.glUniform1i(sCameraHandle, 2);
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
-    GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
-    // watermark
-    GLES20.glUniform1i(sWatermarkHandle, 3);
-    GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
-    if (streamObjectTextureId != null) {
-      if (streamObjectTextureId[0] == -1) {
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, streamObjectTextureId[0]);
-        streamObjectTextureId = null;
-        streamObjectBase = null;
+      GLES20.glUniformMatrix4fv(uMVPMatrixHandle, 1, false, MVPMatrix, 0);
+      GLES20.glUniformMatrix4fv(uSTMatrixHandle, 1, false, STMatrix, 0);
+      //camera
+      GLES20.glUniform1i(sCameraHandle, 2);
+      GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
+      GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId[i]);
+      // watermark
+      GLES20.glUniform1i(sWatermarkHandle, 3);
+      GLES20.glActiveTexture(GLES20.GL_TEXTURE3);
+      if (streamObjectTextureId != null) {
+        if (streamObjectTextureId[0] == -1) {
+          GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, streamObjectTextureId[0]);
+          streamObjectTextureId = null;
+          streamObjectBase = null;
+        } else {
+          GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,
+              streamObjectTextureId[streamObjectBase.updateFrame()]);
+        }
+        //watermark enable, set actual alpha
+        GLES20.glUniform1f(uAlphaHandle, alpha);
       } else {
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D,
-            streamObjectTextureId[streamObjectBase.updateFrame()]);
+        //no watermark. Set watermark size transparent
+        GLES20.glUniform1f(uAlphaHandle, 0.0f);
       }
-      //watermark enable, set actual alpha
-      GLES20.glUniform1f(uAlphaHandle, alpha);
-    } else {
-      //no watermark. Set watermark size transparent
-      GLES20.glUniform1f(uAlphaHandle, 0.0f);
-    }
-    //draw
-    GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
+      //draw
+      GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-    GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+      GLES20.glBindFramebuffer(GLES20.GL_FRAMEBUFFER, 0);
+    }
     GlUtil.checkGlError("drawStreamObject end");
+  }
+
+  @Override
+  public void draw(boolean isFrontCamera) {
+
   }
 
   @Override
@@ -160,7 +167,7 @@ public class StreamObjectRender extends BaseRenderOffScreen {
     sprite.reset();
   }
 
-  public void setTexId(int texId) {
+  public void setTexId(int[] texId) {
     this.texId = texId;
   }
 

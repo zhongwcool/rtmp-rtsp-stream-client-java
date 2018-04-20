@@ -224,8 +224,8 @@ public class OffScreenGlThread implements Runnable, SurfaceTexture.OnFrameAvaila
               }
             }
             textureManager.updateFrame();
-            textureManager.drawOffScreen();
-            textureManager.drawScreen(encoderWidth, encoderHeight);
+            textureManager.drawOffScreen(false);
+            textureManager.drawScreen(encoderWidth, encoderHeight, false);
             surfaceManager.swapBuffer();
             //stream object loaded but you need reset surfaceManagerEncoder
             if (loadStreamObject) {
@@ -238,7 +238,7 @@ public class OffScreenGlThread implements Runnable, SurfaceTexture.OnFrameAvaila
             synchronized (sync) {
               if (surfaceManagerEncoder != null) {
                 surfaceManagerEncoder.makeCurrent();
-                textureManager.drawScreen(encoderWidth, encoderHeight);
+                textureManager.drawScreen(encoderWidth, encoderHeight, false);
                 long ts = textureManager.getSurfaceTexture().getTimestamp();
                 surfaceManagerEncoder.setPresentationTime(ts);
                 surfaceManagerEncoder.swapBuffer();

@@ -62,23 +62,28 @@ public class LightOpenGlView extends OpenGlViewBase {
             surfaceManager.makeCurrent();
 
             simpleCameraRender.updateFrame();
-            if (rotate) simpleCameraRender.drawFrame(rotatedPreviewWidth, rotatedPreviewHeight);
-            else simpleCameraRender.drawFrame(previewWidth, previewHeight);
+            if (rotate) {
+              simpleCameraRender.drawFrame(rotatedPreviewWidth, rotatedPreviewHeight,
+                  !frontPreviewMirror && isFrontCamera);
+            } else {
+              simpleCameraRender.drawFrame(previewWidth, previewHeight,
+                  !frontPreviewMirror && isFrontCamera);
+            }
             surfaceManager.swapBuffer();
 
             synchronized (sync) {
               if (surfaceManagerEncoder != null) {
                 surfaceManagerEncoder.makeCurrent();
-                if (rotate) simpleCameraRender.drawFrame(rotatedEncoderWidth, rotatedEncoderHeight);
-                else simpleCameraRender.drawFrame(encoderWidth, encoderHeight);
+                if (rotate) {
+                  simpleCameraRender.drawFrame(rotatedEncoderWidth, rotatedEncoderHeight,
+                      isFrontCamera);
+                } else {
+                  simpleCameraRender.drawFrame(encoderWidth, encoderHeight, isFrontCamera);
+                }
                 long ts = simpleCameraRender.getSurfaceTexture().getTimestamp();
                 surfaceManagerEncoder.setPresentationTime(ts);
                 surfaceManagerEncoder.swapBuffer();
               }
-            }
-            if (onChangeFace) {
-              simpleCameraRender.faceChanged(isFrontCamera);
-              onChangeFace = false;
             }
           }
         }

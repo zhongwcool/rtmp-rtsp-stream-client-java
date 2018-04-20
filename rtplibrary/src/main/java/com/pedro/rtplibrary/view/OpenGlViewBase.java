@@ -36,7 +36,7 @@ public abstract class OpenGlViewBase extends SurfaceView
   protected int encoderWidth, encoderHeight;
   protected int rotatedPreviewWidth, rotatedPreviewHeight;
   protected int rotatedEncoderWidth, rotatedEncoderHeight;
-  protected boolean onChangeFace = false;
+  protected boolean frontPreviewMirror = false;
   protected boolean isFrontCamera = false;
   protected boolean isCamera2Landscape = false;
   protected int waitTime;
@@ -109,8 +109,11 @@ public abstract class OpenGlViewBase extends SurfaceView
   }
 
   public void setCameraFace(boolean frontCamera) {
-    onChangeFace = true;
     isFrontCamera = frontCamera;
+  }
+
+  public void isFrontPreviewMirror(boolean frontPreviewMirror) {
+    this.frontPreviewMirror = frontPreviewMirror;
   }
 
   public void setEncoderSize(int width, int height) {
