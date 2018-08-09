@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SurfaceHolder;
@@ -417,7 +416,6 @@ public class OpenGlRtmpActivity extends AppCompatActivity
   @Override
   public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i1, int i2) {
     rtmpCamera1.startPreview();
-    Log.e("Pedro", "preview");
   }
 
   @Override

@@ -43,7 +43,6 @@ public class AudioEncoder implements GetMicrophoneData {
   public boolean prepareAudioEncoder(int bitRate, int sampleRate, boolean isStereo) {
     this.sampleRate = sampleRate;
     try {
-
       List<MediaCodecInfo> encoders = new ArrayList<>();
       if (force == CodecUtil.Force.HARDWARE) {
         encoders = CodecUtil.getAllHardwareEncoders(CodecUtil.AAC_MIME);
@@ -92,14 +91,13 @@ public class AudioEncoder implements GetMicrophoneData {
   }
 
   public void start() {
-    if (audioEncoder != null) {
-      mPresentTimeUs = System.nanoTime() / 1000;
-      audioEncoder.start();
-      running = true;
-      Log.i(TAG, "AudioEncoder started");
-    } else {
-      Log.e(TAG, "AudioEncoder need be prepared, AudioEncoder not enabled");
+    if (audioEncoder == null) {
+      throw new RuntimeException("Audio must be prepared before start record or stream");
     }
+    mPresentTimeUs = System.nanoTime() / 1000;
+    audioEncoder.start();
+    running = true;
+    Log.i(TAG, "AudioEncoder started");
   }
 
   public void stop() {

@@ -259,7 +259,6 @@ public abstract class Camera1Base
    */
   public void startPreview(@Camera1Facing int cameraFacing, int width, int height) {
     if (!isStreaming() && !onPreview && !(glInterface instanceof OffScreenGlThread)) {
-      Log.e("Pedro", "asdasd");
       if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         boolean isPortrait = context.getResources().getConfiguration().orientation == 1;
         int w = isPortrait ? height : width;

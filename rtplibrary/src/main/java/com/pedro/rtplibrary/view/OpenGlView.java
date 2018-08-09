@@ -117,7 +117,6 @@ public class OpenGlView extends OpenGlViewBase {
                   GlUtil.getBitmap(previewWidth, previewHeight, encoderWidth, encoderHeight));
               takePhotoCallback = null;
             }
-            //stream object loaded but you need reset surfaceManagerEncoder
             synchronized (sync) {
               if (surfaceManagerEncoder != null) {
                 surfaceManagerEncoder.makeCurrent();
