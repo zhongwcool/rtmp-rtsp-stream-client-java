@@ -240,7 +240,7 @@ public class RtspActivity extends AppCompatActivity
               cbNoiseSuppressor.isChecked()) && rtspCamera1.prepareVideo(width, height,
               Integer.parseInt(etFps.getText().toString()),
               Integer.parseInt(etVideoBitrate.getText().toString()) * 1024,
-              cbHardwareRotation.isChecked(),
+              cbHardwareRotation.isChecked(), 2,
               orientations[spOrientation.getSelectedItemPosition()])) {
             rtspCamera1.startStream(etUrl.getText().toString());
           } else {

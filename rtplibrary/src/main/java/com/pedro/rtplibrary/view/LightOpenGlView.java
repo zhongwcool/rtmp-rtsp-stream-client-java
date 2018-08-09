@@ -38,6 +38,11 @@ public class LightOpenGlView extends OpenGlViewBase {
     initialized = true;
   }
 
+  @Override
+  public boolean isRunning() {
+    return running;
+  }
+
   public boolean isKeepAspectRatio() {
     return keepAspectRatio;
   }

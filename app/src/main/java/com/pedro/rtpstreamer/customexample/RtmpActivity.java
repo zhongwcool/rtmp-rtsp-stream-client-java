@@ -227,8 +227,8 @@ public class RtmpActivity extends AppCompatActivity
               || rtmpCamera1.prepareVideo(width, height,
               Integer.parseInt(etFps.getText().toString()),
               Integer.parseInt(etVideoBitrate.getText().toString()) * 1024,
-              cbHardwareRotation.isChecked(), orientations[spOrientation.getSelectedItemPosition()])
-              && rtmpCamera1.prepareAudio(
+              cbHardwareRotation.isChecked(), 2,
+              orientations[spOrientation.getSelectedItemPosition()]) && rtmpCamera1.prepareAudio(
               Integer.parseInt(etAudioBitrate.getText().toString()) * 1024,
               Integer.parseInt(etSampleRate.getText().toString()),
               rgChannel.getCheckedRadioButtonId() == R.id.rb_stereo, cbEchoCanceler.isChecked(),

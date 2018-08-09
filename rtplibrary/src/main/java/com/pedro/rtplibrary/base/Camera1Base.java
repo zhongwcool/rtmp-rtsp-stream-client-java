@@ -72,17 +72,13 @@ public abstract class Camera1Base
   public Camera1Base(SurfaceView surfaceView) {
     context = surfaceView.getContext();
     cameraManager = new Camera1ApiManager(surfaceView, this);
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   public Camera1Base(TextureView textureView) {
     context = textureView.getContext();
     cameraManager = new Camera1ApiManager(textureView, this);
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -91,9 +87,7 @@ public abstract class Camera1Base
     this.glInterface = openGlView;
     this.glInterface.init();
     cameraManager = new Camera1ApiManager(glInterface.getSurfaceTexture(), openGlView.getContext());
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -103,9 +97,7 @@ public abstract class Camera1Base
     this.glInterface.init();
     cameraManager =
         new Camera1ApiManager(glInterface.getSurfaceTexture(), lightOpenGlView.getContext());
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -114,6 +106,10 @@ public abstract class Camera1Base
     glInterface = new OffScreenGlThread(context);
     glInterface.init();
     cameraManager = new Camera1ApiManager(glInterface.getSurfaceTexture(), context);
+    init();
+  }
+
+  private void init() {
     videoEncoder = new VideoEncoder(this);
     microphoneManager = new MicrophoneManager(this);
     audioEncoder = new AudioEncoder(this);
@@ -146,26 +142,30 @@ public abstract class Camera1Base
    */
   public boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation,
       int iFrameInterval, int rotation) {
-    if (onPreview) {
-      stopPreview();
-      onPreview = true;
-    }
-    int imageFormat = ImageFormat.NV21; //supported nv21 and yv12
     FormatVideoEncoder formatVideoEncoder = FormatVideoEncoder.SURFACE;
     if (glInterface == null) {
       formatVideoEncoder = FormatVideoEncoder.YUV420Dynamical;
-      cameraManager.prepareCamera(width, height, fps, imageFormat);
+      cameraManager.prepareCamera(width, height, fps, ImageFormat.NV21); //supported nv21 and yv12
     }
     return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation,
         iFrameInterval, formatVideoEncoder);
   }
 
   /**
-   * backward compatibility reason
+   * Same to call:
+   * rotation = 0;
+   * if (Portrait) rotation = 90;
+   * prepareVideo(640, 480, 30, 1200 * 1024, false, rotation);
+   *
+   * @return true if success, false if you get a error (Normally because the encoder selected
+   * doesn't support any configuration seated or your device hasn't a H264 encoder).
    */
-  public boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation,
-      int rotation) {
-    return prepareVideo(width, height, fps, bitrate, hardwareRotation, 2, rotation);
+  public boolean prepareVideo() {
+    int orientation = context.getResources().getConfiguration().orientation == 1 ? 90 : 0;
+    return prepareVideo(DefaultParameters.Video.width, DefaultParameters.Video.height,
+        DefaultParameters.Video.fps, DefaultParameters.Video.bitRate,
+        DefaultParameters.Video.hardwareRotation, DefaultParameters.Video.iFrameInterval,
+        orientation);
   }
 
   protected abstract void prepareAudioRtp(boolean isStereo, int sampleRate);
@@ -191,37 +191,14 @@ public abstract class Camera1Base
 
   /**
    * Same to call:
-   * rotation = 0;
-   * if (Portrait) rotation = 90;
-   * prepareVideo(640, 480, 30, 1200 * 1024, false, rotation);
-   *
-   * @return true if success, false if you get a error (Normally because the encoder selected
-   * doesn't support any configuration seated or your device hasn't a H264 encoder).
-   */
-  public boolean prepareVideo() {
-    if (onPreview) {
-      stopPreview();
-      onPreview = true;
-    }
-    if (glInterface == null) {
-      cameraManager.prepareCamera();
-      return videoEncoder.prepareVideoEncoder();
-    } else {
-      int orientation = context.getResources().getConfiguration().orientation == 1 ? 90 : 0;
-      return videoEncoder.prepareVideoEncoder(orientation, FormatVideoEncoder.SURFACE);
-    }
-  }
-
-  /**
-   * Same to call:
    * prepareAudio(128 * 1024, 44100, true, false, false);
    *
    * @return true if success, false if you get a error (Normally because the encoder selected
    * doesn't support any configuration seated or your device hasn't a AAC encoder).
    */
   public boolean prepareAudio() {
-    microphoneManager.createMicrophone();
-    return audioEncoder.prepareAudioEncoder();
+    return prepareAudio(DefaultParameters.Audio.bitRate, DefaultParameters.Audio.sampleRate,
+        DefaultParameters.Audio.isStereo, false, false);
   }
 
   /**
@@ -258,9 +235,9 @@ public abstract class Camera1Base
     recording = false;
     if (mediaMuxer != null) {
       if (canRecord) {
+        canRecord = false;
         mediaMuxer.stop();
         mediaMuxer.release();
-        canRecord = false;
       }
       mediaMuxer = null;
     }
@@ -282,13 +259,12 @@ public abstract class Camera1Base
    */
   public void startPreview(@Camera1Facing int cameraFacing, int width, int height) {
     if (!isStreaming() && !onPreview && !(glInterface instanceof OffScreenGlThread)) {
-      if (glInterface != null && Build.VERSION.SDK_INT >= 18) {
+      Log.e("Pedro", "asdasd");
+      if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         boolean isPortrait = context.getResources().getConfiguration().orientation == 1;
-        if (isPortrait) {
-          glInterface.setEncoderSize(height, width);
-        } else {
-          glInterface.setEncoderSize(width, height);
-        }
+        int w = isPortrait ? height : width;
+        int h = isPortrait ? width : height;
+        glInterface.setEncoderSize(w, h);
         glInterface.start(false);
         cameraManager.setSurfaceTexture(glInterface.getSurfaceTexture());
       }
@@ -305,7 +281,7 @@ public abstract class Camera1Base
 
   /**
    * Start camera preview. Ignored, if stream or preview is started.
-   * Width and height preview will be the last resolution used to start camera. 640x480 first time.
+   * Width and height preview will be 640x480.
    *
    * @param cameraFacing front ot back camera. Like:
    * {@link android.hardware.Camera.CameraInfo#CAMERA_FACING_BACK}
@@ -328,8 +304,7 @@ public abstract class Camera1Base
 
   /**
    * Start camera preview. Ignored, if stream or preview is started.
-   * Width and height preview will be the last resolution used to start camera. 640x480 first time.
-   * CameraFacing will be always back.
+   * Width and height preview will be 640x480.
    */
   public void startPreview() {
     startPreview(Camera.CameraInfo.CAMERA_FACING_BACK);
@@ -341,7 +316,7 @@ public abstract class Camera1Base
    */
   public void stopPreview() {
     if (!isStreaming() && onPreview && !(glInterface instanceof OffScreenGlThread)) {
-      if (glInterface != null && Build.VERSION.SDK_INT >= 18) {
+      if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         glInterface.stop();
       }
       cameraManager.stop();
@@ -408,23 +383,24 @@ public abstract class Camera1Base
   }
 
   private void prepareGlView() {
-    if (glInterface != null && Build.VERSION.SDK_INT >= 18) {
-      if (glInterface instanceof OffScreenGlThread) {
-        glInterface = new OffScreenGlThread(context);
-      }
-      glInterface.init();
-      if (videoEncoder.getRotation() == 90 || videoEncoder.getRotation() == 270) {
-        glInterface.setEncoderSize(videoEncoder.getHeight(), videoEncoder.getWidth());
-      } else {
-        glInterface.setEncoderSize(videoEncoder.getWidth(), videoEncoder.getHeight());
-      }
-      glInterface.start(false);
-      if (videoEncoder.getInputSurface() != null) {
+    if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+      if (glInterface.isRunning()) {
         glInterface.addMediaCodecSurface(videoEncoder.getInputSurface());
+      } else {
+        if (glInterface instanceof OffScreenGlThread) {
+          glInterface = new OffScreenGlThread(context);
+        }
+        glInterface.init();
+        boolean isPortrait = videoEncoder.getRotation() == 90 || videoEncoder.getRotation() == 270;
+        int w = isPortrait ? videoEncoder.getHeight() : videoEncoder.getWidth();
+        int h = isPortrait ? videoEncoder.getWidth() : videoEncoder.getHeight();
+        glInterface.setEncoderSize(w, h);
+        glInterface.start(false);
+        glInterface.addMediaCodecSurface(videoEncoder.getInputSurface());
+        cameraManager.setSurfaceTexture(glInterface.getSurfaceTexture());
+        cameraManager.prepareCamera(videoEncoder.getWidth(), videoEncoder.getHeight(),
+            videoEncoder.getFps(), ImageFormat.NV21);
       }
-      cameraManager.setSurfaceTexture(glInterface.getSurfaceTexture());
-      cameraManager.prepareCamera(videoEncoder.getWidth(), videoEncoder.getHeight(),
-          videoEncoder.getFps(), ImageFormat.NV21);
     }
   }
 
@@ -439,7 +415,7 @@ public abstract class Camera1Base
       microphoneManager.stop();
       videoEncoder.stop();
       audioEncoder.stop();
-      if (glInterface != null && Build.VERSION.SDK_INT >= 18) {
+      if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         glInterface.removeMediaCodecSurface();
         if (glInterface instanceof OffScreenGlThread) {
           glInterface.stop();

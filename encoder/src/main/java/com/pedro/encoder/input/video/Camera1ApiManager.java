@@ -48,6 +48,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   private byte[] yuvBuffer;
   private List<Camera.Size> previewSizeBack;
   private List<Camera.Size> previewSizeFront;
+  private boolean shouldReset = false;
 
   public Camera1ApiManager(SurfaceView surfaceView, GetCameraData getCameraData) {
     this.surfaceView = surfaceView;
@@ -79,6 +80,10 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   }
 
   public void prepareCamera(int width, int height, int fps, int imageFormat) {
+    shouldReset = width != this.width
+        || height != this.height
+        || fps != this.fps
+        || imageFormat != this.imageFormat;
     this.width = width;
     this.height = height;
     this.fps = fps;
@@ -104,6 +109,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   }
 
   public void start() {
+    if (!shouldReset && running) return;
     if (!checkCanOpen()) {
       throw new CameraOpenException("This camera resolution cant be opened");
     }
@@ -321,6 +327,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
           }
           stop();
           prepared = true;
+          shouldReset = true;
           start();
           return;
         }

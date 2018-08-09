@@ -11,6 +11,7 @@ public interface GlInterface {
    */
   void init();
 
+  boolean isRunning();
   /**
    * Set video encoder size use to Opengl
    * @param width video encoder width in px

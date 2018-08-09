@@ -57,6 +57,11 @@ public class OffScreenGlThread
   }
 
   @Override
+  public boolean isRunning() {
+    return running;
+  }
+
+  @Override
   public void setEncoderSize(int width, int height) {
     this.encoderWidth = width;
     this.encoderHeight = height;

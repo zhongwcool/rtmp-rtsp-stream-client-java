@@ -41,6 +41,11 @@ public class OpenGlView extends OpenGlViewBase {
   }
 
   @Override
+  public boolean isRunning() {
+    return running;
+  }
+
+  @Override
   public SurfaceTexture getSurfaceTexture() {
     return managerRender.getSurfaceTexture();
   }
