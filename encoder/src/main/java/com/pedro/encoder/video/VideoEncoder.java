@@ -127,19 +127,6 @@ public class VideoEncoder implements GetCameraData {
     }
   }
 
-  private FormatVideoEncoder chooseColorDynamically(MediaCodecInfo mediaCodecInfo) {
-    for (int color : mediaCodecInfo.getCapabilitiesForType(CodecUtil.H264_MIME).colorFormats) {
-      if (color == FormatVideoEncoder.YUV420PLANAR.getFormatCodec()) {
-        return FormatVideoEncoder.YUV420PLANAR;
-      } else if (color == FormatVideoEncoder.YUV420SEMIPLANAR.getFormatCodec()) {
-        return FormatVideoEncoder.YUV420SEMIPLANAR;
-      } else if (color == FormatVideoEncoder.YUV420PACKEDPLANAR.getFormatCodec()) {
-        return FormatVideoEncoder.YUV420PACKEDPLANAR;
-      }
-    }
-    return null;
-  }
-
   /**
    * Prepare encoder with default parameters but custom rotation and formatVideoEncoder.
    */
@@ -155,6 +142,19 @@ public class VideoEncoder implements GetCameraData {
    */
   public boolean prepareVideoEncoder() {
     return prepareVideoEncoder(DefaultParameters.Video.rotation, formatVideoEncoder);
+  }
+
+  private FormatVideoEncoder chooseColorDynamically(MediaCodecInfo mediaCodecInfo) {
+    for (int color : mediaCodecInfo.getCapabilitiesForType(CodecUtil.H264_MIME).colorFormats) {
+      if (color == FormatVideoEncoder.YUV420PLANAR.getFormatCodec()) {
+        return FormatVideoEncoder.YUV420PLANAR;
+      } else if (color == FormatVideoEncoder.YUV420SEMIPLANAR.getFormatCodec()) {
+        return FormatVideoEncoder.YUV420SEMIPLANAR;
+      } else if (color == FormatVideoEncoder.YUV420PACKEDPLANAR.getFormatCodec()) {
+        return FormatVideoEncoder.YUV420PACKEDPLANAR;
+      }
+    }
+    return null;
   }
 
   @RequiresApi(api = Build.VERSION_CODES.KITKAT)

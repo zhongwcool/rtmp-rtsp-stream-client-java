@@ -120,10 +120,12 @@ public class AudioEncoder implements GetMicrophoneData {
    */
   @Override
   public void inputPCMData(final byte[] buffer, final int size) {
-    if (Build.VERSION.SDK_INT >= 21) {
-      getDataFromEncoderAPI21(buffer, size);
-    } else {
-      getDataFromEncoder(buffer, size);
+    if (running) {
+      if (Build.VERSION.SDK_INT >= 21) {
+        getDataFromEncoderAPI21(buffer, size);
+      } else {
+        getDataFromEncoder(buffer, size);
+      }
     }
   }
 

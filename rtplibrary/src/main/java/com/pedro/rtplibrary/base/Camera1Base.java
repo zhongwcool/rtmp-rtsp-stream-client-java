@@ -1,7 +1,6 @@
 package com.pedro.rtplibrary.base;
 
 import android.content.Context;
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
 import android.media.MediaCodec;
 import android.media.MediaFormat;
@@ -142,11 +141,8 @@ public abstract class Camera1Base
    */
   public boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation,
       int iFrameInterval, int rotation) {
-    FormatVideoEncoder formatVideoEncoder = FormatVideoEncoder.SURFACE;
-    if (glInterface == null) {
-      formatVideoEncoder = FormatVideoEncoder.YUV420Dynamical;
-      cameraManager.prepareCamera(width, height, fps, ImageFormat.NV21); //supported nv21 and yv12
-    }
+    FormatVideoEncoder formatVideoEncoder =
+        glInterface == null ? FormatVideoEncoder.YUV420Dynamical : FormatVideoEncoder.SURFACE;
     return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation,
         iFrameInterval, formatVideoEncoder);
   }
@@ -267,7 +263,6 @@ public abstract class Camera1Base
         glInterface.start(false);
         cameraManager.setSurfaceTexture(glInterface.getSurfaceTexture());
       }
-      cameraManager.prepareCamera();
       cameraManager.start(cameraFacing, width, height);
       if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         glInterface.setCameraFace(cameraManager.isFrontCamera());
@@ -362,10 +357,10 @@ public abstract class Camera1Base
 
   private void startEncoders() {
     prepareGlView();
+    microphoneManager.start();
+    cameraManager.start(videoEncoder.getWidth(), videoEncoder.getHeight());
     videoEncoder.start();
     audioEncoder.start();
-    microphoneManager.start();
-    cameraManager.start();
     if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
       glInterface.setCameraFace(cameraManager.isFrontCamera());
     }
@@ -397,8 +392,6 @@ public abstract class Camera1Base
         glInterface.start(false);
         glInterface.addMediaCodecSurface(videoEncoder.getInputSurface());
         cameraManager.setSurfaceTexture(glInterface.getSurfaceTexture());
-        cameraManager.prepareCamera(videoEncoder.getWidth(), videoEncoder.getHeight(),
-            videoEncoder.getFps(), ImageFormat.NV21);
       }
     }
   }

@@ -15,10 +15,12 @@ import com.pedro.encoder.audio.AudioEncoder;
 import com.pedro.encoder.audio.GetAacData;
 import com.pedro.encoder.input.audio.GetMicrophoneData;
 import com.pedro.encoder.input.audio.MicrophoneManager;
+import com.pedro.encoder.input.video.Camera1Facing;
 import com.pedro.encoder.input.video.Camera2ApiManager;
 import com.pedro.encoder.input.video.Camera2Facing;
 import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.encoder.utils.CodecUtil;
+import com.pedro.encoder.utils.DefaultParameters;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetH264Data;
 import com.pedro.encoder.video.VideoEncoder;
@@ -70,18 +72,14 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
     this.surfaceView = surfaceView;
     this.context = surfaceView.getContext();
     cameraManager = new Camera2ApiManager(context);
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   public Camera2Base(TextureView textureView) {
     this.textureView = textureView;
     this.context = textureView.getContext();
     cameraManager = new Camera2ApiManager(context);
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   public Camera2Base(OpenGlView openGlView) {
@@ -89,9 +87,7 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
     glInterface = openGlView;
     glInterface.init();
     cameraManager = new Camera2ApiManager(context);
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   public Camera2Base(LightOpenGlView lightOpenGlView) {
@@ -99,9 +95,7 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
     glInterface = lightOpenGlView;
     glInterface.init();
     cameraManager = new Camera2ApiManager(context);
-    videoEncoder = new VideoEncoder(this);
-    microphoneManager = new MicrophoneManager(this);
-    audioEncoder = new AudioEncoder(this);
+    init();
   }
 
   public Camera2Base(Context context, boolean useOpengl) {
@@ -112,6 +106,10 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
     }
     isBackground = true;
     cameraManager = new Camera2ApiManager(context);
+    init();
+  }
+
+  private void init() {
     videoEncoder = new VideoEncoder(this);
     microphoneManager = new MicrophoneManager(this);
     audioEncoder = new AudioEncoder(this);
@@ -154,11 +152,20 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
   }
 
   /**
-   * backward compatibility reason
+   * Same to call:
+   * isHardwareRotation = true;
+   * if (openGlVIew) isHardwareRotation = false;
+   * prepareVideo(640, 480, 30, 1200 * 1024, isHardwareRotation, 90);
+   *
+   * @return true if success, false if you get a error (Normally because the encoder selected
+   * doesn't support any configuration seated or your device hasn't a H264 encoder).
    */
-  public boolean prepareVideo(int width, int height, int fps, int bitrate, boolean hardwareRotation,
-      int rotation) {
-    return prepareVideo(width, height, fps, bitrate, hardwareRotation, 2, rotation);
+  public boolean prepareVideo() {
+    int orientation = context.getResources().getConfiguration().orientation == 1 ? 90 : 0;
+    return prepareVideo(DefaultParameters.Video.width, DefaultParameters.Video.height,
+        DefaultParameters.Video.fps, DefaultParameters.Video.bitRate,
+        DefaultParameters.Video.hardwareRotation, DefaultParameters.Video.iFrameInterval,
+        orientation);
   }
 
   protected abstract void prepareAudioRtp(boolean isStereo, int sampleRate);
@@ -184,37 +191,14 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
 
   /**
    * Same to call:
-   * isHardwareRotation = true;
-   * if (openGlVIew) isHardwareRotation = false;
-   * prepareVideo(640, 480, 30, 1200 * 1024, isHardwareRotation, 90);
-   *
-   * @return true if success, false if you get a error (Normally because the encoder selected
-   * doesn't support any configuration seated or your device hasn't a H264 encoder).
-   */
-  public boolean prepareVideo() {
-    if (onPreview) {
-      stopPreview();
-      onPreview = true;
-    }
-    boolean isHardwareRotation = glInterface == null;
-    int orientation = (context.getResources().getConfiguration().orientation == 1) ? 90 : 0;
-    boolean result =
-        videoEncoder.prepareVideoEncoder(640, 480, 30, 1200 * 1024, orientation, isHardwareRotation,
-            2, FormatVideoEncoder.SURFACE);
-    prepareCameraManager();
-    return result;
-  }
-
-  /**
-   * Same to call:
    * prepareAudio(128 * 1024, 44100, true, false, false);
    *
    * @return true if success, false if you get a error (Normally because the encoder selected
    * doesn't support any configuration seated or your device hasn't a AAC encoder).
    */
   public boolean prepareAudio() {
-    microphoneManager.createMicrophone();
-    return audioEncoder.prepareAudioEncoder();
+    return prepareAudio(DefaultParameters.Audio.bitRate, DefaultParameters.Audio.sampleRate,
+        DefaultParameters.Audio.isStereo, false, false);
   }
 
   /**
@@ -270,7 +254,7 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
    * {@link android.hardware.camera2.CameraMetadata#LENS_FACING_BACK}
    * {@link android.hardware.camera2.CameraMetadata#LENS_FACING_FRONT}
    */
-  public void startPreview(@Camera2Facing int cameraFacing) {
+  public void startPreview(@Camera2Facing int cameraFacing, int width, int height) {
     if (!isStreaming() && !onPreview && !isBackground) {
       if (surfaceView != null) {
         cameraManager.prepareCamera(surfaceView.getHolder().getSurface());
@@ -278,14 +262,11 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
         cameraManager.prepareCamera(new Surface(textureView.getSurfaceTexture()));
       } else if (glInterface != null) {
         boolean isCamera2Landscape = context.getResources().getConfiguration().orientation != 1;
-        if (isCamera2Landscape) {
-          glInterface.setEncoderSize(videoEncoder.getWidth(), videoEncoder.getHeight());
-        } else {
-          glInterface.setEncoderSize(videoEncoder.getHeight(), videoEncoder.getWidth());
-        }
+        int w = isCamera2Landscape ? height : width;
+        int h = isCamera2Landscape ? width : height;
+        glInterface.setEncoderSize(w, h);
         glInterface.start(isCamera2Landscape);
-        cameraManager.prepareCamera(glInterface.getSurfaceTexture(), videoEncoder.getWidth(),
-            videoEncoder.getHeight());
+        cameraManager.prepareCamera(glInterface.getSurfaceTexture(), width, height);
       }
       cameraManager.openCameraFacing(cameraFacing);
       if (glInterface != null) {
@@ -297,11 +278,30 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
 
   /**
    * Start camera preview. Ignored, if stream or preview is started.
-   * Width and height preview will be the last resolution used to start camera. 640x480 first time.
-   * CameraFacing will be always back.
+   * Width and height preview will be 640x480.
+   *
+   * @param cameraFacing front ot back camera. Like:
+   * {@link android.hardware.Camera.CameraInfo#CAMERA_FACING_BACK}
+   * {@link android.hardware.Camera.CameraInfo#CAMERA_FACING_FRONT}
    */
+  public void startPreview(@Camera1Facing int cameraFacing) {
+    startPreview(cameraFacing, DefaultParameters.Video.width, DefaultParameters.Video.height);
+  }
+
+  /**
+   * Start camera preview. Ignored, if stream or preview is started.
+   * CameraFacing will be always back.
+   *
+   * @param width preview in px.
+   * @param height preview in px.
+   */
+  public void startPreview(int width, int height) {
+    startPreview(CameraCharacteristics.LENS_FACING_BACK, width, height);
+  }
+
   public void startPreview() {
-    startPreview(CameraCharacteristics.LENS_FACING_BACK);
+    startPreview(CameraCharacteristics.LENS_FACING_BACK, DefaultParameters.Video.width,
+        DefaultParameters.Video.height);
   }
 
   /**
@@ -513,8 +513,11 @@ public abstract class Camera2Base implements GetAacData, GetH264Data, GetMicroph
   }
 
   public GlInterface getGlInterface() {
-    if (glInterface != null) return glInterface;
-    else throw new RuntimeException("You can't do it. You are not using Opengl");
+    if (glInterface != null) {
+      return glInterface;
+    } else {
+      throw new RuntimeException("You can't do it. You are not using Opengl");
+    }
   }
 
   private void prepareCameraManager() {
