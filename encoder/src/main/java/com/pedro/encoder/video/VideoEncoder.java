@@ -16,6 +16,7 @@ import android.view.Surface;
 import com.pedro.encoder.input.video.Frame;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.utils.CodecUtil;
+import com.pedro.encoder.utils.DefaultParameters;
 import com.pedro.encoder.utils.YUVUtil;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -38,7 +39,6 @@ public class VideoEncoder implements GetCameraData {
   private long mPresentTimeUs;
   private boolean running = false;
   private boolean spsPpsSetted = false;
-  private boolean hardwareRotation = false;
 
   //surface to buffer encoder
   private Surface inputSurface;
@@ -48,12 +48,13 @@ public class VideoEncoder implements GetCameraData {
 
   //default parameters for encoder
   private CodecUtil.Force force = CodecUtil.Force.FIRST_COMPATIBLE_FOUND;
-  private int width = 640;
-  private int height = 480;
-  private int fps = 30;
-  private int bitRate = 1200 * 1024; //in kbps
-  private int rotation = 90;
-  private int iFrameInterval = 2;
+  private int width;
+  private int height;
+  private int fps;
+  private int bitRate; //in kbps
+  private int rotation;
+  private boolean hardwareRotation;
+  private int iFrameInterval;
   private FormatVideoEncoder formatVideoEncoder = FormatVideoEncoder.YUV420Dynamical;
   //for disable video
   private boolean sendBlackImage = false;
@@ -74,6 +75,7 @@ public class VideoEncoder implements GetCameraData {
     this.bitRate = bitRate;
     this.rotation = rotation;
     this.hardwareRotation = hardwareRotation;
+    this.iFrameInterval = iFrameInterval;
     this.formatVideoEncoder = formatVideoEncoder;
     MediaCodecInfo encoder = chooseVideoEncoder(CodecUtil.H264_MIME);
     try {
@@ -139,11 +141,20 @@ public class VideoEncoder implements GetCameraData {
   }
 
   /**
+   * Prepare encoder with default parameters but custom rotation and formatVideoEncoder.
+   */
+  public boolean prepareVideoEncoder(int rotation, FormatVideoEncoder formatVideoEncoder) {
+    return prepareVideoEncoder(DefaultParameters.Video.width, DefaultParameters.Video.height,
+        DefaultParameters.Video.fps, DefaultParameters.Video.bitRate, rotation,
+        DefaultParameters.Video.hardwareRotation, DefaultParameters.Video.iFrameInterval,
+        formatVideoEncoder);
+  }
+
+  /**
    * Prepare encoder with default parameters
    */
   public boolean prepareVideoEncoder() {
-    return prepareVideoEncoder(width, height, fps, bitRate, rotation, false, iFrameInterval,
-        formatVideoEncoder);
+    return prepareVideoEncoder(DefaultParameters.Video.rotation, formatVideoEncoder);
   }
 
   @RequiresApi(api = Build.VERSION_CODES.KITKAT)

@@ -21,6 +21,7 @@ import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.encoder.input.video.Frame;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.utils.CodecUtil;
+import com.pedro.encoder.utils.DefaultParameters;
 import com.pedro.encoder.video.FormatVideoEncoder;
 import com.pedro.encoder.video.GetH264Data;
 import com.pedro.encoder.video.VideoEncoder;
@@ -150,14 +151,13 @@ public abstract class Camera1Base
       onPreview = true;
     }
     int imageFormat = ImageFormat.NV21; //supported nv21 and yv12
+    FormatVideoEncoder formatVideoEncoder = FormatVideoEncoder.SURFACE;
     if (glInterface == null) {
+      formatVideoEncoder = FormatVideoEncoder.YUV420Dynamical;
       cameraManager.prepareCamera(width, height, fps, imageFormat);
-      return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation,
-          hardwareRotation, iFrameInterval, FormatVideoEncoder.YUV420Dynamical);
-    } else {
-      return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation,
-          hardwareRotation, iFrameInterval, FormatVideoEncoder.SURFACE);
     }
+    return videoEncoder.prepareVideoEncoder(width, height, fps, bitrate, rotation, hardwareRotation,
+        iFrameInterval, formatVideoEncoder);
   }
 
   /**
@@ -207,9 +207,8 @@ public abstract class Camera1Base
       cameraManager.prepareCamera();
       return videoEncoder.prepareVideoEncoder();
     } else {
-      int orientation = (context.getResources().getConfiguration().orientation == 1) ? 90 : 0;
-      return videoEncoder.prepareVideoEncoder(640, 480, 30, 1200 * 1024, orientation, false, 2,
-          FormatVideoEncoder.SURFACE);
+      int orientation = context.getResources().getConfiguration().orientation == 1 ? 90 : 0;
+      return videoEncoder.prepareVideoEncoder(orientation, FormatVideoEncoder.SURFACE);
     }
   }
 
@@ -286,27 +285,15 @@ public abstract class Camera1Base
       if (glInterface != null && Build.VERSION.SDK_INT >= 18) {
         boolean isPortrait = context.getResources().getConfiguration().orientation == 1;
         if (isPortrait) {
-          if (width == 0 || height == 0) {
-            glInterface.setEncoderSize(videoEncoder.getHeight(), videoEncoder.getWidth());
-          } else {
-            glInterface.setEncoderSize(height, width);
-          }
+          glInterface.setEncoderSize(height, width);
         } else {
-          if (width == 0 || height == 0) {
-            glInterface.setEncoderSize(videoEncoder.getWidth(), videoEncoder.getHeight());
-          } else {
-            glInterface.setEncoderSize(width, height);
-          }
+          glInterface.setEncoderSize(width, height);
         }
         glInterface.start(false);
         cameraManager.setSurfaceTexture(glInterface.getSurfaceTexture());
       }
       cameraManager.prepareCamera();
-      if (width == 0 || height == 0) {
-        cameraManager.start(cameraFacing);
-      } else {
-        cameraManager.start(cameraFacing, width, height);
-      }
+      cameraManager.start(cameraFacing, width, height);
       if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
         glInterface.setCameraFace(cameraManager.isFrontCamera());
       }
@@ -325,7 +312,7 @@ public abstract class Camera1Base
    * {@link android.hardware.Camera.CameraInfo#CAMERA_FACING_FRONT}
    */
   public void startPreview(@Camera1Facing int cameraFacing) {
-    startPreview(cameraFacing, 0, 0);
+    startPreview(cameraFacing, DefaultParameters.Video.width, DefaultParameters.Video.height);
   }
 
   /**
@@ -365,7 +352,7 @@ public abstract class Camera1Base
   }
 
   /**
-   * Change preview orientation can be called while stream.
+   * Change preview rotation can be called while stream.
    *
    * @param orientation of the camera preview. Could be 90, 180, 270 or 0.
    */
@@ -561,8 +548,11 @@ public abstract class Camera1Base
   }
 
   public GlInterface getGlInterface() {
-    if (glInterface != null) return glInterface;
-    else throw new RuntimeException("You can't do it. You are not using Opengl");
+    if (glInterface != null) {
+      return glInterface;
+    } else {
+      throw new RuntimeException("You can't do it. You are not using Opengl");
+    }
   }
 
   /**

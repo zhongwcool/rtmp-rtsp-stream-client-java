@@ -8,6 +8,7 @@ import android.media.CamcorderProfile;
 import android.util.Log;
 import android.view.SurfaceView;
 import android.view.TextureView;
+import com.pedro.encoder.utils.DefaultParameters;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -39,10 +40,10 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   private boolean isFrontCamera = false;
 
   //default parameters for camera
-  private int width = 640;
-  private int height = 480;
-  private int fps = 30;
-  private int orientation = 0;
+  private int width;
+  private int height;
+  private int fps;
+  private int orientation;
   private int imageFormat = ImageFormat.NV21;
   private byte[] yuvBuffer;
   private List<Camera.Size> previewSizeBack;
@@ -66,9 +67,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   }
 
   private void init(Context context) {
-    if (context.getResources().getConfiguration().orientation == 1) {
-      orientation = 90;
-    }
+    orientation = context.getResources().getConfiguration().orientation == 1 ? 90 : 0;
     cameraSelect = selectCameraFront();
     previewSizeFront = getPreviewSize();
     cameraSelect = selectCameraBack();
@@ -88,7 +87,8 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   }
 
   public void prepareCamera() {
-    prepareCamera(640, 480, fps, imageFormat);
+    prepareCamera(DefaultParameters.Video.width, DefaultParameters.Video.height,
+        DefaultParameters.Video.fps, imageFormat);
   }
 
   public void start(@Camera1Facing int cameraFacing, int width, int height) {
@@ -100,7 +100,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
   }
 
   public void start(@Camera1Facing int cameraFacing) {
-    start(cameraFacing, width, height);
+    start(cameraFacing, DefaultParameters.Video.width, DefaultParameters.Video.height);
   }
 
   public void start() {

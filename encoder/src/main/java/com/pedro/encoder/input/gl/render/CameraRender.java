@@ -29,7 +29,7 @@ public class CameraRender extends BaseRenderOffScreen {
       1f, 1f, 0f, 1f, 1f, //top right
   };
 
-  //fix orientation in camera2 landscape
+  //fix rotation in camera2 landscape
   private final float[] squareVertexDataCamera2LandScape = {
       // X, Y, Z, U, V
       -1f, -1f, 0f, 0f, 1f, //bottom left

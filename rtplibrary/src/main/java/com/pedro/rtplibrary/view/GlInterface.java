@@ -100,7 +100,7 @@ public interface GlInterface {
    *
    * Start Opengl rendering.
    *
-   * @param isCamera2Landscape true if you start stream with device in landscape and with camera2 to fix orientation error.
+   * @param isCamera2Landscape true if you start stream with device in landscape and with camera2 to fix rotation error.
    */
   void start(boolean isCamera2Landscape);
 
