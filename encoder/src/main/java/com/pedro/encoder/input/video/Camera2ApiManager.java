@@ -48,6 +48,7 @@ public class Camera2ApiManager extends CameraDevice.StateCallback {
   private CameraDevice cameraDevice;
   private SurfaceView surfaceView;
   private TextureView textureView;
+  private SurfaceTexture surfaceTexture;
   private Surface surfaceEncoder; //input surfaceEncoder from videoEncoder
   private CameraManager cameraManager;
   private Handler cameraHandler;
@@ -57,6 +58,7 @@ public class Camera2ApiManager extends CameraDevice.StateCallback {
   private Surface preview;
   private boolean isOpenGl = false;
   private boolean isFrontCamera = false;
+  private int width, height;
   //private boolean faceDetectionSupported = false;
   //private Integer faceDetectionMode;
 
@@ -85,7 +87,9 @@ public class Camera2ApiManager extends CameraDevice.StateCallback {
   }
 
   public void prepareCamera(SurfaceTexture surfaceTexture, int width, int height) {
-    surfaceTexture.setDefaultBufferSize(width, height);
+    this.surfaceTexture = surfaceTexture;
+    this.width = width;
+    this.height = height;
     this.surfaceEncoder = new Surface(surfaceTexture);
     prepared = true;
     isOpenGl = true;
@@ -115,6 +119,7 @@ public class Camera2ApiManager extends CameraDevice.StateCallback {
                   Arrays.asList(drawPreview(preview), drawInputSurface(surfaceEncoder)), null,
                   cameraHandler);
             } else {
+              if (surfaceTexture != null) surfaceTexture.setDefaultBufferSize(width, height);
               cameraCaptureSession.setRepeatingBurst(
                   Collections.singletonList(drawInputSurface(surfaceEncoder)), null, cameraHandler);
             }

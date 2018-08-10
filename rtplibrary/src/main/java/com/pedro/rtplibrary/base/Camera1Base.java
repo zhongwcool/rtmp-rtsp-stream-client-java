@@ -378,7 +378,7 @@ public abstract class Camera1Base
 
   private void prepareGlView() {
     if (glInterface != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-      if (glInterface.isRunning()) {
+      if (glInterface.isRunning() && !(glInterface instanceof OffScreenGlThread)) {
         glInterface.addMediaCodecSurface(videoEncoder.getInputSurface());
       } else {
         if (glInterface instanceof OffScreenGlThread) {
