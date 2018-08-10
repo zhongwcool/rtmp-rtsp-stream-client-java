@@ -103,6 +103,7 @@ public class Camera1ApiManager implements Camera.PreviewCallback, Camera.FaceDet
 
   private void start() {
     if (!shouldReset && running) return;
+    if (running) stop();
     if (!checkCanOpen()) throw new CameraOpenException("This camera resolution cant be opened");
     yuvBuffer = new byte[width * height * 3 / 2];
     try {
