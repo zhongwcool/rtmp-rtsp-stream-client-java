@@ -9,9 +9,11 @@ import android.media.MediaMuxer;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.view.Surface;
 import android.view.SurfaceView;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.audio.AudioEncoder;
 import com.pedro.encoder.audio.GetAacData;
 import com.pedro.encoder.input.audio.GetMicrophoneData;
@@ -22,6 +24,7 @@ import com.pedro.encoder.video.GetH264Data;
 import com.pedro.encoder.video.VideoEncoder;
 import com.pedro.rtplibrary.view.GlInterface;
 import com.pedro.rtplibrary.view.OffScreenGlThread;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 

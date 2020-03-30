@@ -3,11 +3,14 @@ package com.pedro.rtplibrary.rtsp;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.rtplibrary.base.DisplayBase;
 import com.pedro.rtsp.rtsp.Protocol;
 import com.pedro.rtsp.rtsp.RtspClient;
 import com.pedro.rtsp.utils.ConnectCheckerRtsp;
+
 import java.nio.ByteBuffer;
 
 /**

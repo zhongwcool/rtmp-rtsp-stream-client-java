@@ -3,10 +3,13 @@ package com.pedro.encoder.input.gl.render;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.view.Surface;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.input.gl.render.filters.BaseFilterRender;
 import com.pedro.encoder.input.gl.render.filters.NoFilterRender;
+
 import java.util.ArrayList;
 import java.util.List;
 

@@ -3,9 +3,11 @@ package com.pedro.encoder.input.gl;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
-import com.pedro.encoder.utils.gl.GlUtil;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.utils.gl.GifStreamObject;
+import com.pedro.encoder.utils.gl.GlUtil;
 import com.pedro.encoder.utils.gl.ImageStreamObject;
 import com.pedro.encoder.utils.gl.TextStreamObject;
 

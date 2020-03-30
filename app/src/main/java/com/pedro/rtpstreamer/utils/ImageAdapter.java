@@ -1,7 +1,6 @@
 package com.pedro.rtpstreamer.utils;
 
 import android.content.res.Resources;
-import android.support.v4.content.res.ResourcesCompat;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
@@ -9,7 +8,11 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.TextView;
+
+import androidx.core.content.res.ResourcesCompat;
+
 import com.pedro.rtpstreamer.R;
+
 import java.util.List;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
@@ -32,7 +35,7 @@ public class ImageAdapter extends BaseAdapter {
   }
 
   public long getItemId(int position) {
-    return (long) position;
+      return position;
   }
 
   @Override

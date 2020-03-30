@@ -11,11 +11,14 @@ import android.opengl.Matrix;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.annotation.RequiresApi;
 import android.view.Surface;
 import android.view.View;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.R;
 import com.pedro.encoder.utils.gl.GlUtil;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 

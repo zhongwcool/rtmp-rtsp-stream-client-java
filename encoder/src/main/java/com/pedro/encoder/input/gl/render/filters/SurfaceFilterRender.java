@@ -7,14 +7,17 @@ import android.opengl.GLES11Ext;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.view.Surface;
 import android.view.View;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.R;
 import com.pedro.encoder.input.gl.Sprite;
 import com.pedro.encoder.input.gl.SpriteGestureController;
 import com.pedro.encoder.utils.gl.GlUtil;
 import com.pedro.encoder.utils.gl.TranslateTo;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;

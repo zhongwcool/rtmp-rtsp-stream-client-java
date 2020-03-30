@@ -3,14 +3,15 @@ package com.pedro.rtplibrary.rtmp;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.view.SurfaceView;
 import android.view.TextureView;
 
-import com.pedro.rtplibrary.base.Camera2Base;
+import androidx.annotation.RequiresApi;
 
+import com.pedro.rtplibrary.base.Camera2Base;
 import com.pedro.rtplibrary.view.LightOpenGlView;
 import com.pedro.rtplibrary.view.OpenGlView;
+
 import net.ossrs.rtmp.ConnectCheckerRtmp;
 import net.ossrs.rtmp.SrsFlvMuxer;
 

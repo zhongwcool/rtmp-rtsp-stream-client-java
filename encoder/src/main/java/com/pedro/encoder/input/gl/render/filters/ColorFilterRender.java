@@ -5,9 +5,12 @@ import android.content.res.Resources;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.R;
 import com.pedro.encoder.utils.gl.GlUtil;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.regex.Matcher;

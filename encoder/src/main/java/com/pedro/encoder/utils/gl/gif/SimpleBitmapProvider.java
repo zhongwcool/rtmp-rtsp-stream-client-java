@@ -1,7 +1,8 @@
 package com.pedro.encoder.utils.gl.gif;
 
 import android.graphics.Bitmap;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 final class SimpleBitmapProvider implements GifDecoder.BitmapProvider {
   @NonNull

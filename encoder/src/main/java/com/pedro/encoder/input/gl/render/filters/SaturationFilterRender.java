@@ -4,9 +4,12 @@ import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.Matrix;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.R;
 import com.pedro.encoder.utils.gl.GlUtil;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -39,8 +42,8 @@ public class SaturationFilterRender extends BaseFilterRender {
 
   private float saturation = -0.5f;
   private final float shift = 1.0f / 255.0f;
-  private final float weights[] = { 2f / 8f, 5f / 8f, 1f / 8f };
-  private float exponents[] = new float[3];
+    private final float[] weights = {2f / 8f, 5f / 8f, 1f / 8f};
+    private float[] exponents = new float[3];
 
   public SaturationFilterRender() {
     squareVertex = ByteBuffer.allocateDirect(squareVertexDataFilter.length * FLOAT_SIZE_BYTES)

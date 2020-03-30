@@ -3,9 +3,10 @@ package com.pedro.rtplibrary.rtsp;
 import android.content.Context;
 import android.media.MediaCodec;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.view.SurfaceView;
 import android.view.TextureView;
+
+import androidx.annotation.RequiresApi;
 
 import com.pedro.rtplibrary.base.Camera2Base;
 import com.pedro.rtplibrary.view.LightOpenGlView;

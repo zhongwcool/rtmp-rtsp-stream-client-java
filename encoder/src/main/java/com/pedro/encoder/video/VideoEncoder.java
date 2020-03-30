@@ -9,14 +9,17 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Surface;
+
+import androidx.annotation.RequiresApi;
+
 import com.pedro.encoder.input.video.Frame;
 import com.pedro.encoder.input.video.GetCameraData;
 import com.pedro.encoder.utils.CodecUtil;
 import com.pedro.encoder.utils.YUVUtil;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;

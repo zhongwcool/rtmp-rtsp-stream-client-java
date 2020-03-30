@@ -3,7 +3,8 @@ package com.pedro.encoder.input.video;
 import android.annotation.TargetApi;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
-import android.support.annotation.IntDef;
+
+import androidx.annotation.IntDef;
 
 /**
  * Created by pedro on 7/10/17.
